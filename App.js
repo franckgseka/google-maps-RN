@@ -1,20 +1,40 @@
-import *as React from 'react';
+import * as React from 'react';
+import * as Location from 'expo-location';
 import { StyleSheet, Text, View } from 'react-native';
-import MapView, {Marker, Polyline} from 'react-native-maps';
+import MapView, { Marker, Polyline } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import { GOOGLE_MAPS_KEY } from '@env';
+const carImage = require('./assets/car.png')
+
 
 export default function App() {
 
-  const [origin, setOrigin] = React.useState ({
+  const [origin, setOrigin] = React.useState({
     latitude: 33.640411,
     longitude: -84.419853,
   });
 
-  const [destination, setDestination] = React.useState ({
+  const [destination, setDestination] = React.useState({
     latitude: 33.640411,
     longitude: -84.419853,
   });
+
+  React.useEffect(() => {
+    getLocationPermissions();
+  }, []);
+
+  async function getLocationPermission() {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Permission denied');
+      return;
+    }
+    let location = await Location.getCurrentPositionAsync({});
+    const current = {
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -27,26 +47,27 @@ export default function App() {
           longitudeDelta: 0.04
         }}
       >
-        <Marker 
-          draggable 
+        <Marker
+          draggable
           coordinate={origin}
+          image={carImage}
           onDragEnd={(direction) => setOrigin(direction.nativeEvent.coordinate)}
         />
 
-        <Marker 
+        <Marker
           draggable
           coordinate={destination}
           onDragEnd={(direction) => setDestination(direction.nativeEvent.coordinate)}
         />
 
-        <MapViewDirections 
+        <MapViewDirections
           origin={origin}
           destination={destination}
           apikey={GOOGLE_MAPS_KEY}
         />
 
-        <Polyline 
-          coordinates={[ origin, destination ]}
+        <Polyline
+          coordinates={[origin, destination]}
           strokeColor="pink"
           strokeWidth={9}
         />
